@@ -54,8 +54,8 @@ Before creating a folder:
 
 1. Determine whether the current conversation already has a session folder.
 2. If a matching folder exists, reuse it.
-3. If the current folder is unclear, inspect `.agent-sessions/` for a folder matching the current task goal or conversation topic.
-4. Create a new folder only when no suitable existing folder can be identified.
+3. If the current folder is unclear, ask the user whether to specify an existing session folder or create a new session folder.
+4. Create a new folder only when the user chooses to create one or no existing session folder can be identified from the current conversation.
 
 Use lowercase kebab-case for the summary segment. Prefer concise task names.
 
@@ -92,6 +92,8 @@ When running `restore`:
 8. Do not treat unverified assumptions as facts.
 9. If `HISTORY.md` conflicts with `CONTEXT.md`, prefer `CONTEXT.md` for current state.
 10. If checkpoint files conflict with current project files, prefer current project files.
+11. Mark reconstructed state with its source and confidence when the source is partial, inferred, or conflict-prone.
+12. During `restore`, do not modify project files, execute TODO items, or continue implementation unless the user explicitly asks for follow-up work.
 
 Do not modify checkpoint files during `restore` unless the user explicitly asks to update them too.
 
@@ -176,5 +178,6 @@ For `restore`, summarize the rebuilt task state instead of repeating all of `HIS
 - Open questions
 - Known risks
 - Next actions
+- Source and confidence notes for reconstructed state
 
 Respect project-level formatting instructions for generated markdown when they do not conflict with the file contracts above.
