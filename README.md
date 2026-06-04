@@ -11,8 +11,8 @@ Language: English | [中文](README.zh-CN.md)
 - [Update Behavior](#update-behavior)
 - [Restore Behavior](#restore-behavior)
 - [Handoff Behavior](#handoff-behavior)
-- [Repository Layout](#repository-layout)
 - [Scripts](#scripts)
+- [Repository Layout](#repository-layout)
 
 ## Overview
 
@@ -107,6 +107,16 @@ During handoff:
 - Target `CONTEXT.md` includes a concise provenance note under `Current State`.
 - Target `HISTORY.md` records copied files, discarded files, reference rewrites, user-requested corrections, and unresolved uncertainty.
 
+## Scripts
+
+The `scripts/` folder contains Windows batch scripts for installing or removing this skill from the Codex skills directory:
+
+- `codex-install-symbolic-link.bat`: Remove any existing `%USERPROFILE%\.codex\skills\context-checkpoint` entry, then install this skill as a directory symbolic link.
+- `codex-install-copy.bat`: Remove any existing `%USERPROFILE%\.codex\skills\context-checkpoint` entry, then install this skill by copying the full skill directory.
+- `codex-uninstall.bat`: Remove `%USERPROFILE%\.codex\skills\context-checkpoint` when it exists.
+
+Each script pauses before exiting so the result remains visible when launched by double-clicking.
+
 ## Repository Layout
 
 ```text
@@ -123,13 +133,3 @@ context-checkpoint-skill/
 |-- README.zh-CN.md
 `-- LICENSE
 ```
-
-## Scripts
-
-The `scripts/` folder contains Windows batch scripts for installing or removing this skill from the Codex skills directory:
-
-- `codex-install-symbolic-link.bat`: Remove any existing `%USERPROFILE%\.codex\skills\context-checkpoint` entry, then install this skill as a directory symbolic link.
-- `codex-install-copy.bat`: Remove any existing `%USERPROFILE%\.codex\skills\context-checkpoint` entry, then install this skill by copying the full skill directory.
-- `codex-uninstall.bat`: Remove `%USERPROFILE%\.codex\skills\context-checkpoint` when it exists.
-
-Each script pauses before exiting so the result remains visible when launched by double-clicking.
