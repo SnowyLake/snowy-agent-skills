@@ -25,8 +25,8 @@
 这个 skill 定义了三个聚焦能力:
 
 - `update`: 创建或刷新当前会话 checkpoint.
-- `restore`: 从当前会话 checkpoint 重建任务状态.
-- `handoff`: 从另一个会话文件夹重建当前对话上下文, 然后把重建后的状态保存到当前会话文件夹.
+- `restore`: 从当前会话 checkpoint 重建任务上下文, 适用于上下文被压缩后的恢复.
+- `handoff`: 从另一个会话 checkpoint 重建当前会话任务上下文, 适用于多会话间上下文的传递.
 
 ## Checkpoint 文件
 
@@ -77,7 +77,7 @@ Checkpoint 文件保存在:
 
 ## Restore 行为
 
-`restore` 用于从当前会话 checkpoint 重建任务状态.
+`restore` 用于从当前会话 checkpoint 重建任务上下文, 适用于上下文被压缩后的恢复.
 
 在 restore 过程中:
 
@@ -92,7 +92,7 @@ Checkpoint 文件保存在:
 
 ## Handoff 行为
 
-`handoff` 用于跨会话上下文重建.
+`handoff` 用于从另一个会话 checkpoint 重建当前会话任务上下文, 适用于多会话间上下文的传递.
 
 在 handoff 过程中:
 

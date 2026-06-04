@@ -25,8 +25,8 @@ It uses `CONTEXT.md` for the current still-valid task state and `HISTORY.md` for
 The skill defines three focused capabilities:
 
 - `update`: Create or refresh the current session checkpoint.
-- `restore`: Rebuild task state from the current session checkpoint.
-- `handoff`: Rebuild the current conversation from another session folder, then save the rebuilt state into the current session folder.
+- `restore`: Rebuild task context from the current session checkpoint, for recovery after context has been compacted.
+- `handoff`: Rebuild the current session task context from another session checkpoint, for passing context across sessions.
 
 ## Checkpoint Files
 
@@ -63,7 +63,7 @@ The skill avoids guessing when a session folder is unclear. It asks the user whe
 
 ## Update Behavior
 
-`update` creates or refreshes the checkpoint for the current session.
+`update` creates or refreshes the current session checkpoint.
 
 During update:
 
@@ -77,7 +77,7 @@ During update:
 
 ## Restore Behavior
 
-`restore` rebuilds task state from the current session checkpoint.
+`restore` rebuilds task context from the current session checkpoint, for recovery after context has been compacted.
 
 During restore:
 
@@ -92,7 +92,7 @@ During restore:
 
 ## Handoff Behavior
 
-`handoff` is designed for cross-session context reconstruction.
+`handoff` rebuilds the current session task context from another session checkpoint, for passing context across sessions.
 
 During handoff:
 
