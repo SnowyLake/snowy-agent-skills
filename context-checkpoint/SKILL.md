@@ -13,6 +13,7 @@ description: Create, update, restore, or hand off session checkpoint files from 
 - [Update Workflow](#update-workflow)
 - [Restore Workflow](#restore-workflow)
 - [Handoff Workflow](#handoff-workflow)
+- [Language and Formatting](#language-and-formatting)
 - [File Contracts](#file-contracts)
 - [Output Style](#output-style)
 
@@ -181,6 +182,16 @@ Target checkpoint handling:
 - The handoff entry must record source folder, target folder, copied checkpoint files, copied artifacts, discarded artifacts, reference rewrites, user overrides, missing optional source files, and unresolved uncertainty.
 - `handoff` does not modify project files, execute TODO items, or continue implementation unless the user explicitly asks for follow-up work.
 
+## Language and Formatting
+
+When writing checkpoint Markdown files:
+
+- Keep the required file names and section headings from the file contracts unless project-level instructions explicitly override them.
+- Treat English headings in this skill as structural contracts, not as the default body language.
+- Choose body text language according to project-level or user-level instructions first.
+- If no project-level or user-level language instruction exists, use the current conversation language for body text.
+- Apply this rule to checkpoint Markdown written by this skill, including `CONTEXT.md`, `HISTORY.md`, and handoff entries.
+
 ## File Contracts
 
 `CONTEXT.md` stores only current, still-valid information that affects future work. Use this structure:
@@ -315,4 +326,4 @@ Then summarize the rebuilt task state instead of repeating all of `HISTORY.md`. 
 - Next actions
 - Source and confidence notes for reconstructed state
 
-Respect project-level formatting instructions for generated markdown when they do not conflict with the file contracts above.
+Respect project-level language and formatting instructions for generated markdown when they do not conflict with the file contracts above.
