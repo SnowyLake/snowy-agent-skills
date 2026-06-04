@@ -12,6 +12,7 @@ Language: English | [中文](README.zh-CN.md)
 - [Restore Behavior](#restore-behavior)
 - [Handoff Behavior](#handoff-behavior)
 - [Repository Layout](#repository-layout)
+- [Scripts](#scripts)
 
 ## Overview
 
@@ -113,7 +114,21 @@ context-checkpoint-skill/
 |   |-- SKILL.md
 |   `-- agents/
 |       `-- openai.yaml
+|-- scripts/
+|   |-- codex-install-copy.bat
+|   |-- codex-install-symbolic-link.bat
+|   `-- codex-uninstall.bat
 |-- README.md
 |-- README.zh-CN.md
 `-- LICENSE
 ```
+
+## Scripts
+
+The `scripts/` folder contains Windows batch scripts for installing or removing this skill from the Codex skills directory:
+
+- `codex-install-symbolic-link.bat`: Remove any existing `%USERPROFILE%\.codex\skills\context-checkpoint` entry, then install this skill as a directory symbolic link.
+- `codex-install-copy.bat`: Remove any existing `%USERPROFILE%\.codex\skills\context-checkpoint` entry, then install this skill by copying the full skill directory.
+- `codex-uninstall.bat`: Remove `%USERPROFILE%\.codex\skills\context-checkpoint` when it exists.
+
+Each script pauses before exiting so the result remains visible when launched by double-clicking.

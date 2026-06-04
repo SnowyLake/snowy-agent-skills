@@ -12,6 +12,7 @@
 - [Restore 行为](#restore-行为)
 - [Handoff 行为](#handoff-行为)
 - [仓库结构](#仓库结构)
+- [Scripts](#scripts)
 
 ## 概览
 
@@ -113,7 +114,21 @@ context-checkpoint-skill/
 |   |-- SKILL.md
 |   `-- agents/
 |       `-- openai.yaml
+|-- scripts/
+|   |-- codex-install-copy.bat
+|   |-- codex-install-symbolic-link.bat
+|   `-- codex-uninstall.bat
 |-- README.md
 |-- README.zh-CN.md
 `-- LICENSE
 ```
+
+## Scripts
+
+`scripts/` 文件夹包含用于向 Codex skills 目录安装或移除本 skill 的 Windows batch 脚本:
+
+- `codex-install-symbolic-link.bat`: 删除已有的 `%USERPROFILE%\.codex\skills\context-checkpoint` 条目, 然后以目录 symbolic link 形式安装本 skill.
+- `codex-install-copy.bat`: 删除已有的 `%USERPROFILE%\.codex\skills\context-checkpoint` 条目, 然后通过完整复制 skill 目录安装本 skill.
+- `codex-uninstall.bat`: 如果 `%USERPROFILE%\.codex\skills\context-checkpoint` 存在, 则移除它.
+
+每个脚本都会在退出前暂停, 方便双击运行时查看结果.
