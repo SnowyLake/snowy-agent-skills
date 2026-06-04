@@ -1,0 +1,4 @@
+interface:
+  display_name: "Context Checkpoint"
+  short_description: "Create and restore session checkpoint files"
+  default_prompt: "Use $context-checkpoint to update or restore CONTEXT.md and HISTORY.md for this session."
