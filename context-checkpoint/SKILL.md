@@ -144,12 +144,12 @@ When running `handoff`:
 7. Read source `HISTORY.md` when available.
 8. Scan other files in the source session folder.
 9. Classify non-checkpoint files as still-relevant artifacts or historical/stale artifacts.
-10. Present the classification to the user and wait for confirmation before copying non-checkpoint files.
-11. Apply user feedback to the copy/discard plan.
+10. Use the classification to decide which non-checkpoint files to copy or discard without waiting for user confirmation.
+11. Record copied and discarded artifacts in the handoff entry and final output so the user can request follow-up corrections if needed.
 12. Create or update the target session folder.
 13. Write target `CONTEXT.md` as the rebuilt current-state snapshot.
 14. Write target `HISTORY.md` by preserving useful source history and appending a handoff entry.
-15. Copy confirmed still-relevant artifacts into the target session folder.
+15. Copy still-relevant artifacts into the target session folder.
 16. Rewrite references in target `CONTEXT.md`, target `HISTORY.md`, and copied artifacts from source paths to target paths where needed.
 17. Verify copied files and rewritten references.
 18. Report the source folder, target folder, copied files, discarded files, and files updated.
@@ -169,8 +169,8 @@ Non-checkpoint artifact handling:
 - Classify non-checkpoint files using source `CONTEXT.md` sections such as `Relevant Files`, `TODO`, `Next Actions`, and `Known Risks`.
 - Treat files that still affect future decisions or implementation as still-relevant artifacts.
 - Treat rejected, deferred, superseded, stale, or purely historical process documents as historical/stale artifacts.
-- Ask the user to confirm the classification before copying or discarding non-checkpoint files.
-- Let the user accept the classification, move files between copy and discard, copy all artifacts, or copy only checkpoint files.
+- Do not stop to ask for confirmation before copying or discarding non-checkpoint files.
+- Record copied and discarded artifacts in the handoff entry and final output so the user can review and request follow-up corrections.
 - `Discarded` means not copied into the target session folder. Never delete source files.
 
 Target checkpoint handling:
@@ -179,7 +179,7 @@ Target checkpoint handling:
 - Target `CONTEXT.md` must include one concise provenance note under `Current State` naming the source session folder.
 - Detailed handoff records belong in target `HISTORY.md`, not target `CONTEXT.md`.
 - Target `HISTORY.md` must preserve useful source history and append one handoff entry.
-- The handoff entry must record source folder, target folder, copied checkpoint files, copied artifacts, discarded artifacts, reference rewrites, user overrides, missing optional source files, and unresolved uncertainty.
+- The handoff entry must record source folder, target folder, copied checkpoint files, copied artifacts, discarded artifacts, reference rewrites, user-requested corrections, missing optional source files, and unresolved uncertainty.
 - `handoff` does not modify project files, execute TODO items, or continue implementation unless the user explicitly asks for follow-up work.
 
 ## Language and Formatting
@@ -230,7 +230,7 @@ Section intent:
 - `Known Risks`: Known risks, pitfalls, or caveats.
 - `Next Actions`: The top 1-3 concrete actions to take next, distilled from `TODO`.
 
-During `handoff`, target `CONTEXT.md` must include one concise provenance note under `Current State` naming the source session folder. Do not place copied/discarded file lists, user overrides, or detailed reference rewrite records in `CONTEXT.md`.
+During `handoff`, target `CONTEXT.md` must include one concise provenance note under `Current State` naming the source session folder. Do not place copied/discarded file lists, user-requested corrections, or detailed reference rewrite records in `CONTEXT.md`.
 
 `HISTORY.md` stores historical summaries, troubleshooting records, rejected or deferred approaches, and reasoning archives. Use a multi-entry structure:
 
@@ -284,7 +284,7 @@ For each `handoff`, append one handoff entry to target `HISTORY.md`. Use this st
 ### Notes
 ```
 
-The handoff entry must record copied checkpoint files, copied artifacts, discarded artifacts, reference path rewrites, user classification overrides, missing optional source files such as `HISTORY.md`, and unresolved uncertainty.
+The handoff entry must record copied checkpoint files, copied artifacts, discarded artifacts, reference path rewrites, user-requested corrections, missing optional source files such as `HISTORY.md`, and unresolved uncertainty.
 
 ## Output Style
 

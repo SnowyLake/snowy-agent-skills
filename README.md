@@ -49,7 +49,7 @@ The skill defines three focused capabilities:
 - Rejected or deferred approaches: options that were ruled out or postponed.
 - Assumptions: verified or unverified assumptions made during the session.
 - Notes: extra context useful for later review.
-- Handoff audit entries: records of copied files, discarded files, reference rewrites, and user overrides.
+- Handoff audit entries: records of copied files, discarded files, reference rewrites, and user-requested corrections.
 
 ## Session Folders
 
@@ -102,9 +102,10 @@ During handoff:
 - The skill does not create missing source checkpoint files.
 - The skill does not search other folders unless the user explicitly asks for discovery.
 - Non-checkpoint artifacts are classified before copying.
-- The user confirms which artifacts should be copied or discarded.
+- The skill copies still-relevant artifacts and skips historical or stale artifacts without blocking for confirmation.
+- The final output reports copied and discarded artifacts so the user can request follow-up corrections if needed.
 - Target `CONTEXT.md` includes a concise provenance note under `Current State`.
-- Target `HISTORY.md` records copied files, discarded files, reference rewrites, user overrides, and unresolved uncertainty.
+- Target `HISTORY.md` records copied files, discarded files, reference rewrites, user-requested corrections, and unresolved uncertainty.
 
 ## Repository Layout
 

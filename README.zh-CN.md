@@ -49,7 +49,7 @@
 - 已拒绝或暂缓的方案: 已被否决或推迟的选项.
 - 假设: 会话中形成的已验证或未验证假设.
 - 备注: 便于之后追溯的额外上下文.
-- Handoff 审计条目: 记录复制文件, 丢弃文件, 引用路径修正和用户覆盖选择.
+- Handoff 审计条目: 记录复制文件, 丢弃文件, 引用路径修正和用户要求的后续修正.
 
 ## 会话文件夹
 
@@ -102,9 +102,10 @@ Checkpoint 文件保存在:
 - skill 不会创建缺失的 source checkpoint 文件.
 - skill 不会搜索其他文件夹, 除非用户明确要求 discovery.
 - 非 checkpoint 工作产物会先分类, 再决定是否复制.
-- 用户确认哪些工作产物应该复制, 哪些应该丢弃.
+- skill 会直接复制仍然有效的工作产物, 跳过历史性或过期工作产物, 不在中途阻塞等待确认.
+- 最终输出会报告 copied artifact 和 discarded artifact, 用户如不满意可再要求后续修正.
 - target `CONTEXT.md` 会在 `Current State` 下包含简短 provenance note.
-- target `HISTORY.md` 会记录 copied files, discarded files, reference rewrites, user overrides 和 unresolved uncertainty.
+- target `HISTORY.md` 会记录 copied files, discarded files, reference rewrites, user-requested corrections 和 unresolved uncertainty.
 
 ## 仓库结构
 
