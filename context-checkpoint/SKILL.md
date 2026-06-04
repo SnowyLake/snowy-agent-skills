@@ -125,7 +125,7 @@ When running `restore`:
 8. Do not treat unverified assumptions as facts.
 9. If `HISTORY.md` conflicts with `CONTEXT.md`, prefer `CONTEXT.md` for current state.
 10. If checkpoint files conflict with current project files, prefer current project files.
-11. Mark reconstructed state with its source and confidence when the source is partial, inferred, or conflict-prone.
+11. When restored state is incomplete, inferred, or affected by conflicts, state where the information came from and how confident the reconstruction is.
 12. During `restore`, do not modify project files, execute TODO items, or continue implementation unless the user explicitly asks for follow-up work.
 
 Do not modify checkpoint files during `restore` unless the user explicitly asks to update them too.
