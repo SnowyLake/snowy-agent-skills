@@ -6,11 +6,12 @@ Language: English | [中文](README.zh-CN.md)
 
 - [Overview](#overview)
 - [Capabilities](#capabilities)
+- [Usage Examples](#usage-examples)
 - [Checkpoint Files](#checkpoint-files)
 - [Session Folders](#session-folders)
-- [Update Behavior](#update-behavior)
-- [Restore Behavior](#restore-behavior)
-- [Handoff Behavior](#handoff-behavior)
+- [Update](#update)
+- [Restore](#restore)
+- [Handoff](#handoff)
 - [Scripts](#scripts)
 - [Repository Layout](#repository-layout)
 
@@ -18,15 +19,37 @@ Language: English | [中文](README.zh-CN.md)
 
 `context-checkpoint-skill` is a lightweight Codex skill for preserving and rebuilding task context across long-running or multi-session work.
 
-It uses `CONTEXT.md` for the current still-valid task state and `HISTORY.md` for historical decisions, findings, rejected approaches, and handoff records.
+A checkpoint is a context snapshot of the current session. Each checkpoint contains two files: `CONTEXT.md` and `HISTORY.md`.
+
+`CONTEXT.md` stores the current still-valid task state. `HISTORY.md` stores historical decisions, findings, rejected approaches, and handoff records.
 
 ## Capabilities
 
-The skill defines three focused capabilities:
+The skill provides three core capabilities:
 
-- `update`: Create or refresh the current session checkpoint.
-- `restore`: Rebuild task context from the current session checkpoint, for recovery after context has been compacted.
-- `handoff`: Rebuild the current session task context from another session checkpoint, for passing context across sessions.
+- `update`: Create or refresh the current session's checkpoint.
+- `restore`: Rebuild task context from the current session's checkpoint, for recovery after single-session context has been compacted.
+- `handoff`: Rebuild the current session task context from another session's checkpoint, for passing and sharing context across sessions.
+
+## Usage Examples
+
+Command-style requests:
+
+```text
+$context-checkpoint update
+$context-checkpoint restore
+$context-checkpoint handoff .agent-sessions/20260605-example-session
+```
+
+Explicit natural-language requests:
+
+```text
+$context-checkpoint update context for this session.
+$context-checkpoint restore context from the current session checkpoint.
+$context-checkpoint hand off context from .agent-sessions/20260605-example-session into this session.
+```
+
+Fully implicit natural-language requests are supported, but explicitly naming `$context-checkpoint` is recommended.
 
 ## Checkpoint Files
 
@@ -61,7 +84,7 @@ Checkpoint files are stored under:
 
 The skill avoids guessing when a session folder is unclear. It asks the user whether to specify an existing session folder or create a new one.
 
-## Update Behavior
+## Update
 
 `update` creates or refreshes the current session checkpoint.
 
@@ -75,7 +98,7 @@ During update:
 - Useful historical records are preserved.
 - Stale process notes and superseded assumptions are moved out of `CONTEXT.md` and into `HISTORY.md` when still useful.
 
-## Restore Behavior
+## Restore
 
 `restore` rebuilds task context from the current session checkpoint, for recovery after context has been compacted.
 
@@ -90,7 +113,7 @@ During restore:
 - Project files take priority over conflicting checkpoint content.
 - Restore is read-only unless the user explicitly asks for follow-up work.
 
-## Handoff Behavior
+## Handoff
 
 `handoff` rebuilds the current session task context from another session checkpoint, for passing context across sessions.
 

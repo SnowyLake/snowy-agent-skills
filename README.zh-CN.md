@@ -5,12 +5,13 @@
 ## Table of Contents
 
 - [概览](#概览)
-- [能力](#能力)
+- [功能](#功能)
+- [使用示例](#使用示例)
 - [Checkpoint 文件](#checkpoint-文件)
 - [会话文件夹](#会话文件夹)
-- [Update 行为](#update-行为)
-- [Restore 行为](#restore-行为)
-- [Handoff 行为](#handoff-行为)
+- [Update](#update)
+- [Restore](#restore)
+- [Handoff](#handoff)
 - [Scripts](#scripts)
 - [仓库结构](#仓库结构)
 
@@ -18,15 +19,37 @@
 
 `context-checkpoint-skill` 是一个轻量级 Codex skill, 用于在长任务或多会话工作中保存和重建任务上下文.
 
-它使用 `CONTEXT.md` 保存当前仍然有效的任务状态, 使用 `HISTORY.md` 保存历史决策, 重要发现, 已拒绝方案和 handoff 记录.
+checkpoint 是当前会话的上下文快照, 每个 checkpoint 包含两个文件: `CONTEXT.md` 和 `HISTORY.md`.
 
-## 能力
+`CONTEXT.md` 保存当前仍然有效的任务状态. `HISTORY.md` 保存历史决策, 重要发现, 已拒绝方案和 handoff 记录.
 
-这个 skill 定义了三个聚焦能力:
+## 功能
 
-- `update`: 创建或刷新当前会话 checkpoint.
-- `restore`: 从当前会话 checkpoint 重建任务上下文, 适用于上下文被压缩后的恢复.
-- `handoff`: 从另一个会话 checkpoint 重建当前会话任务上下文, 适用于多会话间上下文的传递.
+这个 skill 提供三个核心功能:
+
+- `update`: 创建或刷新当前会话的 checkpoint.
+- `restore`: 从当前会话的 checkpoint 重建任务上下文, 适用于单会话上下文被压缩后的恢复.
+- `handoff`: 从另一个会话的 checkpoint 重建当前会话任务上下文, 适用于多会话间上下文的传递与共享.
+
+## 使用示例
+
+命令式请求:
+
+```text
+$context-checkpoint update
+$context-checkpoint restore
+$context-checkpoint handoff .agent-sessions/20260605-example-session
+```
+
+显式自然语言请求:
+
+```text
+$context-checkpoint 更新上下文.
+$context-checkpoint 从当前会话 checkpoint 恢复上下文.
+$context-checkpoint 从 .agent-sessions/20260605-example-session handoff 上下文到当前会话.
+```
+
+完全隐式的自然语言请求不被禁止, 但推荐显式写出 `$context-checkpoint`.
 
 ## Checkpoint 文件
 
@@ -61,7 +84,7 @@ Checkpoint 文件保存在:
 
 当会话文件夹不明确时, skill 不会自行猜测. 它会询问用户是指定已有会话文件夹, 还是创建新的会话文件夹.
 
-## Update 行为
+## Update
 
 `update` 用于创建或刷新当前会话 checkpoint.
 
@@ -75,7 +98,7 @@ Checkpoint 文件保存在:
 - 已有的有用历史记录会被保留.
 - 仍然有用的过期过程记录和已被取代的假设会从 `CONTEXT.md` 移入 `HISTORY.md`.
 
-## Restore 行为
+## Restore
 
 `restore` 用于从当前会话 checkpoint 重建任务上下文, 适用于上下文被压缩后的恢复.
 
@@ -90,7 +113,7 @@ Checkpoint 文件保存在:
 - 当项目文件和 checkpoint 内容冲突时, 优先相信当前项目文件.
 - restore 默认只读, 除非用户明确要求后续工作.
 
-## Handoff 行为
+## Handoff
 
 `handoff` 用于从另一个会话 checkpoint 重建当前会话任务上下文, 适用于多会话间上下文的传递.
 
