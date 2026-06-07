@@ -17,7 +17,7 @@
 
 ## 概览
 
-`context-checkpoint-skill` 是一个轻量级 Codex skill, 用于在长任务或多会话工作中保存和重建任务上下文.
+`context-checkpoint-skill` 是一个轻量级通用 agent skill, 用于在长任务或多会话工作中保存和重建任务上下文.
 
 checkpoint 是当前会话的上下文快照, 每个 checkpoint 包含两个文件: `CONTEXT.md` 和 `HISTORY.md`.
 

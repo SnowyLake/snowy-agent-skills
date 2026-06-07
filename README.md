@@ -17,7 +17,7 @@ Language: English | [中文](README.zh-CN.md)
 
 ## Overview
 
-`context-checkpoint-skill` is a lightweight Codex skill for preserving and rebuilding task context across long-running or multi-session work.
+`context-checkpoint-skill` is a lightweight, general-purpose agent skill for preserving and rebuilding task context across long-running or multi-session work.
 
 A checkpoint is a context snapshot of the current session. Each checkpoint contains two files: `CONTEXT.md` and `HISTORY.md`.
 

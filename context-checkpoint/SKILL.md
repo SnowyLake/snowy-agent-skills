@@ -1,6 +1,6 @@
 ---
 name: context-checkpoint
-description: Create, update, restore, or hand off session checkpoint files from conversation context. Use when the user explicitly asks to update checkpoint files, create handoff context, prepare context before compaction, write CONTEXT.md and HISTORY.md, restore the current session from checkpoint files, hand off another session into the current conversation, or rebuild task state from CONTEXT.md / HISTORY.md. Also use update automatically when the system is about to compact context, but do not trigger only because the user typed /compact unless they explicitly request checkpoint generation first.
+description: Manage session checkpoints in CONTEXT.md and HISTORY.md. Use for explicit update, restore, or handoff requests, pre-compaction checkpointing, rebuilding current-session context, or transferring context from another session folder. Do not trigger for plain /compact unless checkpointing is requested.
 ---
 
 # Context Checkpoint
