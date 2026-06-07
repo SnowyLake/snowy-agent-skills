@@ -48,7 +48,7 @@ $context-checkpoint restore context from the current session checkpoint.
 $context-checkpoint hand off context from .agent-sessions/20260605-example-session into this session.
 ```
 
-Fully implicit natural-language requests are supported, but explicitly naming `$context-checkpoint` is recommended.
+Fully implicit natural-language requests are supported, but explicitly calling `$context-checkpoint` is recommended.
 
 ## Checkpoint Files
 

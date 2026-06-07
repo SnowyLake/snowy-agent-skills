@@ -1,6 +1,6 @@
 ---
 name: context-checkpoint
-description: Manage session checkpoints in CONTEXT.md and HISTORY.md. Use for explicit update, restore, or handoff requests, pre-compaction checkpointing, rebuilding current-session context, or transferring context from another session folder. Do not trigger for plain /compact unless checkpointing is requested.
+description: Manage CONTEXT.md and HISTORY.md session checkpoints. Use for update, restore, or handoff requests that refresh, rebuild, or transfer session task context.
 ---
 
 # Context Checkpoint
@@ -29,14 +29,13 @@ Keep this skill narrow. Do not manage project wikis, create unrelated documents,
 
 ## Command Selection
 
+Prefer command-style requests or explicit natural-language requests that name `$context-checkpoint`. Fully implicit natural-language requests are allowed when they clearly ask for checkpoint update, restore, or handoff.
+
 Use `update` when:
 
 - The user explicitly asks to generate, update, or refresh checkpoint files.
-- The user asks for handoff context, cross-session continuation files, or pre-compaction context cleanup.
+- The user asks for handoff context or cross-session continuation files.
 - The user asks to organize the current session into `CONTEXT.md` and `HISTORY.md`.
-- The system is about to perform automatic context compaction.
-
-Do not use `update` merely because the user manually invokes `/compact`. Use it only when the user explicitly asks to generate a checkpoint before compaction.
 
 Use `restore` when:
 

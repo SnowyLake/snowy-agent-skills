@@ -48,7 +48,7 @@ $context-checkpoint 从当前会话 checkpoint 恢复上下文.
 $context-checkpoint 从 .agent-sessions/20260605-example-session handoff 上下文到当前会话.
 ```
 
-完全隐式的自然语言请求不被禁止, 但推荐显式写出 `$context-checkpoint`.
+完全隐式的自然语言请求不被禁止, 但推荐显式调用 `$context-checkpoint`.
 
 ## Checkpoint 文件
 
