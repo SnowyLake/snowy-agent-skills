@@ -15,18 +15,19 @@ Language: English | [中文](README.zh-CN.md)
 
 ## Overview
 
-`context-checkpoint` is a lightweight, general-purpose agent skill for preserving and rebuilding task context across long-running or multi-session work.
+`context-checkpoint` is an agent-neutral context management skill for preserving and rebuilding task context across long-running or multi-session work.
 
 A checkpoint is a context snapshot of the current session. Each checkpoint contains two files: `CONTEXT.md` and `HISTORY.md`.
 
-`CONTEXT.md` stores the current still-valid task state. `HISTORY.md` stores historical decisions, findings, rejected approaches, and handoff records.
+- `CONTEXT.md` stores only current, still-valid information that affects future work.
+- `HISTORY.md` stores historical summaries, troubleshooting records, rejected or deferred approaches, and reasoning archives.
 
 ## Capabilities
 
 The skill provides three core capabilities:
 
 - `update`: Create or refresh the current session's checkpoint.
-- `restore`: Rebuild task context from the current session's checkpoint, for recovery after single-session context has been compacted.
+- `restore`: Rebuild task context from the current session's checkpoint or checkpoint files in a specified session folder.
 - `handoff`: Rebuild the current session task context from another session's checkpoint, for passing and sharing context across sessions.
 
 ## Usage Examples
@@ -36,6 +37,7 @@ Command-style requests:
 ```text
 $context-checkpoint update
 $context-checkpoint restore
+$context-checkpoint restore .agent-sessions/20260605-example-session
 $context-checkpoint handoff .agent-sessions/20260605-example-session
 ```
 
@@ -44,6 +46,7 @@ Explicit natural-language requests:
 ```text
 $context-checkpoint update context for this session.
 $context-checkpoint restore context from the current session checkpoint.
+$context-checkpoint restore context from .agent-sessions/20260605-example-session.
 $context-checkpoint hand off context from .agent-sessions/20260605-example-session into this session.
 ```
 
@@ -98,18 +101,21 @@ During update:
 
 ## Restore
 
-`restore` rebuilds task context from the current session checkpoint, for recovery after context has been compacted.
+`restore` rebuilds task context from the current session checkpoint or from checkpoint files in an explicitly specified session folder.
 
 During restore:
 
-- The skill resolves the current session folder.
+- The skill resolves the restore source session folder.
+- If no path is provided, the current session folder is used.
+- If a path is provided, that folder is used as the restore source.
+- If the current session folder already has checkpoint files and a different session folder is specified, restore stops instead of mixing two contexts.
 - `CONTEXT.md` is read first when available.
 - `HISTORY.md` is read only when historical background is needed.
 - If only `CONTEXT.md` exists, the skill restores from it.
 - If only `HISTORY.md` exists, the skill reconstructs what it can and reports that the current-state snapshot is missing.
 - If neither file exists, the skill reports that no usable checkpoint files were found.
 - Project files take priority over conflicting checkpoint content.
-- Restore is read-only unless the user explicitly asks for follow-up work.
+- Restore is read-only and does not copy checkpoint files unless the user explicitly asks for follow-up work.
 
 ## Handoff
 

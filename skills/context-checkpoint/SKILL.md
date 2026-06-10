@@ -22,7 +22,7 @@ description: Manage CONTEXT.md and HISTORY.md session checkpoints. Use for updat
 Provide exactly three capabilities:
 
 - `update`: Create or refresh the current session checkpoint in `CONTEXT.md` and `HISTORY.md`.
-- `restore`: Rebuild the current task state from the current session checkpoint files.
+- `restore`: Rebuild the current task state from the current session checkpoint files or checkpoint files in an explicitly specified session folder.
 - `handoff`: Rebuild the current conversation state from another session folder's checkpoint files, then save the rebuilt state into the current conversation's session folder.
 
 Keep this skill narrow. Do not manage project wikis, create unrelated documents, or add broader session-management commands.
@@ -41,6 +41,7 @@ Use `restore` when:
 
 - The user asks to read the current session checkpoint.
 - The user asks to restore or rebuild task state from the current session's `CONTEXT.md` and `HISTORY.md`.
+- The user asks to restore or rebuild task state from checkpoint files in a specified session folder.
 
 Use `handoff` when:
 
@@ -64,12 +65,14 @@ For `update`, resolve the current session folder:
 3. If the current folder is unclear, ask the user whether to specify an existing session folder or create a new session folder.
 4. Create a new folder only when the user chooses to create one or no existing session folder can be identified from the current conversation.
 
-For `restore`, resolve the current session folder:
+For `restore`, resolve the source session folder:
 
-1. Determine whether the current conversation already has a session folder.
-2. If a matching folder exists, reuse it.
-3. If the current folder is unclear, ask the user to specify an existing session folder.
-4. Do not create a new session folder for `restore`.
+1. If the user does not specify a session folder, resolve the current session folder.
+2. If the user specifies a session folder, use it as the restore source.
+3. If the user specifies a different session folder and the current conversation already has checkpoint files in its own session folder, stop and report the conflict. Do not read, merge, copy, or modify either checkpoint.
+4. If the specified session folder is the current session folder, allow restore.
+5. If the current folder is unclear and no path was specified, ask the user to specify an existing session folder.
+6. Do not create a new session folder for `restore`.
 
 For `handoff`, resolve two session folders:
 
@@ -115,18 +118,19 @@ HISTORY.md
 
 When running `restore`:
 
-1. Resolve the current session folder.
-2. Read `CONTEXT.md` first when available.
-3. Read `HISTORY.md` only when needed to understand decision background, troubleshooting rationale, rejected approaches, or historical uncertainty.
-4. If only `CONTEXT.md` exists, restore from it.
-5. If only `HISTORY.md` exists, reconstruct as much background as possible and state that the current-state snapshot is missing.
-6. If neither file exists, state that no usable checkpoint files were found in the session folder.
-7. Do not treat old history as current state.
-8. Do not treat unverified assumptions as facts.
-9. If `HISTORY.md` conflicts with `CONTEXT.md`, prefer `CONTEXT.md` for current state.
-10. If checkpoint files conflict with current project files, prefer current project files.
-11. When restored state is incomplete, inferred, or affected by conflicts, state where the information came from and how confident the reconstruction is.
-12. During `restore`, do not modify project files, execute TODO items, or continue implementation unless the user explicitly asks for follow-up work.
+1. Resolve the restore source session folder.
+2. If the user specified a different source session folder and the current conversation already has checkpoint files in its own session folder, stop and report the conflict.
+3. Read `CONTEXT.md` first when available.
+4. Read `HISTORY.md` only when needed to understand decision background, troubleshooting rationale, rejected approaches, or historical uncertainty.
+5. If only `CONTEXT.md` exists, restore from it.
+6. If only `HISTORY.md` exists, reconstruct as much background as possible and state that the current-state snapshot is missing.
+7. If neither file exists, state that no usable checkpoint files were found in the session folder.
+8. Do not treat old history as current state.
+9. Do not treat unverified assumptions as facts.
+10. If `HISTORY.md` conflicts with `CONTEXT.md`, prefer `CONTEXT.md` for current state.
+11. If checkpoint files conflict with current project files, prefer current project files.
+12. When restored state is incomplete, inferred, or affected by conflicts, state where the information came from and how confident the reconstruction is.
+13. During `restore`, do not modify project files, execute TODO items, copy checkpoint files, or continue implementation unless the user explicitly asks for follow-up work.
 
 Do not modify checkpoint files during `restore` unless the user explicitly asks to update them too.
 
