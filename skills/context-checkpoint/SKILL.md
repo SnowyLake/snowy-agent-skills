@@ -1,6 +1,6 @@
 ---
 name: context-checkpoint
-description: Manage CONTEXT.md and HISTORY.md session checkpoints. Use for update, restore, handoff, or review requests that refresh, rebuild, transfer, or audit session context.
+description: Manage CONTEXT.md and HISTORY.md session checkpoints. Use for update, restore, handoff, or checkpoint-guided work review requests that refresh, rebuild, transfer, or audit session context.
 ---
 
 # Context Checkpoint
@@ -26,7 +26,7 @@ Provide exactly four capabilities:
 - `update`: Create or refresh the current session checkpoint in `CONTEXT.md` and `HISTORY.md`.
 - `restore`: Rebuild the current session context from the current session checkpoint files or checkpoint files in an explicitly specified session folder.
 - `handoff`: Rebuild the current conversation state from another session folder's checkpoint files, then save the rebuilt state into the current conversation's session folder.
-- `review`: Objectively review checkpoint files in an explicitly specified session folder and the related work state without restoring or continuing implementation.
+- `review`: Objectively review the actual work referenced by checkpoint files in an explicitly specified session folder without restoring or continuing implementation.
 
 Keep this skill narrow. Do not manage project wikis, create unrelated documents, or add broader session-management commands.
 
@@ -55,10 +55,10 @@ Use `handoff` when:
 
 Use `review` when:
 
-- The user asks to review, audit, assess, inspect, or critique a specified session folder's checkpoint and work.
+- The user asks to review, audit, assess, inspect, or critique a specified session folder's actual work.
 - The user asks whether a session completed its goal.
 - The user asks whether a session's work has defects, edge cases, missing validation, conflicts, or inconsistencies.
-- The user asks for an objective checkpoint review without restoring or continuing implementation.
+- The user asks for an objective checkpoint-guided work review without restoring or continuing implementation.
 
 ## Session Folder Resolution
 
@@ -141,6 +141,7 @@ Use lowercase kebab-case for the summary segment. Prefer concise session names.
 - May read checkpoint files in the specified source session folder and related project files.
 - Must not modify source checkpoint files, write review artifacts, modify project files, or execute TODO items unless the user explicitly asks for follow-up work.
 - By default, outputs the review result only.
+- Treat checkpoint files as the review brief and navigation index. Do not make checkpoint-file quality the primary review target unless the user explicitly asks to review the checkpoint files themselves.
 
 ## Update Workflow
 
@@ -249,14 +250,17 @@ When running `review`:
 5. Read source `CONTEXT.md`.
 6. Read source `HISTORY.md` when available.
 7. If `HISTORY.md` is missing, continue review and state that historical context is limited.
-8. Read `Work Artifacts` to quickly understand the prior work scope, but do not treat it as a complete source of truth.
-9. Use `CONTEXT.md` to understand the goal, current state, decisions, constraints, risks, open questions, TODO, next actions, relevant files, and work artifacts.
-10. Review whether the session completed `Current Goal`.
-11. Review the referenced work content for defects, edge cases, missing validation, conflicts, or inconsistencies.
-12. Prefer current project files over checkpoint claims when they conflict.
-13. Do not restore session context as the active working context.
-14. Do not modify checkpoint files, project files, or execute TODO items unless the user explicitly asks for follow-up work.
-15. Output the review result only unless the user explicitly asks to create a review artifact.
+8. Use `CONTEXT.md` to understand the goal, current state, decisions, constraints, risks, open questions, TODO, next actions, relevant files, and work artifacts.
+9. Build the review scope from `Current Goal`, `Work Artifacts`, `Relevant Files`, `TODO`, `Next Actions`, and any source-folder artifacts. `Work Artifacts` is the fastest pointer to the prior work scope, but not a complete source of truth.
+10. Read the actual referenced project files, generated artifacts, diffs, tests, or configuration that represent the session's work before producing findings.
+11. Review whether the actual work completed `Current Goal`.
+12. Review the actual work content for defects, edge cases, missing validation, conflicts, or inconsistencies.
+13. Do not list ordinary checkpoint-file quality issues as `Findings`. Put checkpoint clarity, freshness, missing sections, or internal checkpoint consistency issues under `Checkpoint Quality` unless they directly prevent assessing goal completion or hide the work scope.
+14. Review `CONTEXT.md` and `HISTORY.md` as primary work artifacts only when the user's requested review target or the source session's `Current Goal` was specifically to create or update checkpoint files.
+15. Prefer current project files over checkpoint claims when they conflict.
+16. Do not restore session context as the active working context.
+17. Do not modify checkpoint files, project files, or execute TODO items unless the user explicitly asks for follow-up work.
+18. Output the review result only unless the user explicitly asks to create a review artifact.
 
 ## Language and Formatting
 
@@ -440,8 +444,8 @@ For `review`, output these sections:
 Review section intent:
 
 - `Goal Completion`: State whether `Current Goal` is `Completed`, `Partially Completed`, `Not Completed`, or `Unclear`, and briefly explain the evidence.
-- `Findings`: List concrete issues ordered by severity, including defects, edge cases, behavior risks, documentation conflicts, missing validation, unverified assumptions, or inconsistencies. If there are no findings, say so explicitly.
-- `Checkpoint Quality`: Assess whether `CONTEXT.md` and optional `HISTORY.md` are reliable enough for future restore, handoff, or review. Include whether `Work Artifacts` points to the relevant work scope.
+- `Findings`: List concrete issues in the actual reviewed work, ordered by severity. Include implementation defects, logic gaps, edge cases, behavior risks, missing validation, project-file conflicts, or inconsistencies in files created, modified, deleted, moved, or otherwise referenced by the source session. For each finding, include severity, evidence, impact, and a recommended fix. If no concrete work issues are found after inspecting the relevant files, say so explicitly.
+- `Checkpoint Quality`: Assess whether `CONTEXT.md` and optional `HISTORY.md` are reliable enough for future restore, handoff, or review. Include whether `Work Artifacts` points to the relevant work scope. Put checkpoint-only issues here unless they directly block assessment of the actual work.
 - `Open Questions`: List questions that cannot be answered from checkpoint files and current project files.
 - `Summary`: Provide a concise actionable conclusion.
 

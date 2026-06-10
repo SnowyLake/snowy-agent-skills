@@ -31,7 +31,7 @@ The skill provides four core capabilities:
 - `update`: Create or refresh the current session's checkpoint.
 - `restore`: Rebuild session context from the current session's checkpoint or checkpoint files in a specified session folder.
 - `handoff`: Rebuild session context from another session's checkpoint, then save the rebuilt checkpoint into the current session folder.
-- `review`: Objectively review checkpoint files in a specified session folder and the related work state without restoring or continuing implementation.
+- `review`: Objectively review the actual work referenced by checkpoint files in a specified session folder without restoring or continuing implementation.
 
 ## Usage Examples
 
@@ -154,16 +154,20 @@ During handoff:
 
 ## Review
 
-`review` objectively reviews checkpoint files in a specified session folder and the related work state without restoring or continuing implementation.
+`review` objectively reviews the actual work referenced by checkpoint files in a specified session folder without restoring or continuing implementation.
 
 During review:
 
 - The user must specify a source session folder.
 - The source session folder must contain `CONTEXT.md`.
 - `HISTORY.md` is optional. If it is missing, review continues and reports that historical context is limited.
+- `CONTEXT.md`, `HISTORY.md`, and `Work Artifacts` are used as the review brief and navigation index.
+- The actual review target is the work referenced by the checkpoint, such as modified project files, generated artifacts, tests, configuration, or documentation.
 - `Work Artifacts` is read to quickly understand the prior work scope, but it is not treated as a complete source of truth.
 - The first review question is whether the session completed `Current Goal`.
-- The review then checks the referenced work content for defects, edge cases, missing validation, conflicts, or inconsistencies.
+- The review then checks the actual referenced work content for defects, logic gaps, edge cases, missing validation, conflicts, or inconsistencies.
+- Each finding should include severity, evidence, impact, and a recommended fix.
+- Checkpoint-only quality issues belong under `Checkpoint Quality`, not `Findings`, unless they directly prevent assessing the actual work.
 - Current project files take priority over checkpoint claims when they conflict.
 - Review is read-only and outputs review results by default.
 
