@@ -1,4 +1,4 @@
 interface:
   display_name: "Context Checkpoint"
-  short_description: "Update, restore, or hand off session checkpoints"
-  default_prompt: "Use $context-checkpoint to update, restore, or hand off CONTEXT.md and HISTORY.md session checkpoints."
+  short_description: "Update, restore, hand off, or review session checkpoints"
+  default_prompt: "Use $context-checkpoint to update, restore, hand off, or review CONTEXT.md and HISTORY.md session checkpoints."

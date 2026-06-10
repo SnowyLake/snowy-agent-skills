@@ -1,6 +1,6 @@
 ---
 name: context-checkpoint
-description: Manage CONTEXT.md and HISTORY.md session checkpoints. Use for update, restore, or handoff requests that refresh, rebuild, or transfer session task context.
+description: Manage CONTEXT.md and HISTORY.md session checkpoints. Use for update, restore, handoff, or review requests that refresh, rebuild, transfer, or audit session context.
 ---
 
 # Context Checkpoint
@@ -10,26 +10,29 @@ description: Manage CONTEXT.md and HISTORY.md session checkpoints. Use for updat
 - [Overview](#overview)
 - [Command Selection](#command-selection)
 - [Session Folder Resolution](#session-folder-resolution)
+- [Access Modes](#access-modes)
 - [Update Workflow](#update-workflow)
 - [Restore Workflow](#restore-workflow)
 - [Handoff Workflow](#handoff-workflow)
+- [Review Workflow](#review-workflow)
 - [Language and Formatting](#language-and-formatting)
 - [File Contracts](#file-contracts)
 - [Output Style](#output-style)
 
 ## Overview
 
-Provide exactly three capabilities:
+Provide exactly four capabilities:
 
 - `update`: Create or refresh the current session checkpoint in `CONTEXT.md` and `HISTORY.md`.
-- `restore`: Rebuild the current task state from the current session checkpoint files or checkpoint files in an explicitly specified session folder.
+- `restore`: Rebuild the current session context from the current session checkpoint files or checkpoint files in an explicitly specified session folder.
 - `handoff`: Rebuild the current conversation state from another session folder's checkpoint files, then save the rebuilt state into the current conversation's session folder.
+- `review`: Objectively review checkpoint files in an explicitly specified session folder and the related work state without restoring or continuing implementation.
 
 Keep this skill narrow. Do not manage project wikis, create unrelated documents, or add broader session-management commands.
 
 ## Command Selection
 
-Prefer command-style requests or explicit natural-language requests that name `$context-checkpoint`. Fully implicit natural-language requests are allowed when they clearly ask for checkpoint update, restore, or handoff.
+Prefer command-style requests or explicit natural-language requests that name `$context-checkpoint`. Fully implicit natural-language requests are allowed when they clearly ask for checkpoint update, restore, handoff, or review.
 
 Use `update` when:
 
@@ -40,15 +43,22 @@ Use `update` when:
 Use `restore` when:
 
 - The user asks to read the current session checkpoint.
-- The user asks to restore or rebuild task state from the current session's `CONTEXT.md` and `HISTORY.md`.
-- The user asks to restore or rebuild task state from checkpoint files in a specified session folder.
+- The user asks to restore or rebuild session context from the current session's `CONTEXT.md` and `HISTORY.md`.
+- The user asks to restore or rebuild session context from checkpoint files in a specified session folder.
 
 Use `handoff` when:
 
-- The user asks to continue, take over, or reconstruct context from another session folder.
-- The user asks to rebuild the current conversation from an older or different session checkpoint.
+- The user asks to continue, take over, or reconstruct context from another session folder and write that rebuilt context into the current session folder.
+- The user asks to rebuild the current conversation from an older or different session checkpoint and save the rebuilt state.
 - The user asks to migrate checkpoint context from session A into session B.
-- A new session needs to take over from an existing checkpoint in another session folder.
+- A new session needs to take over from an existing checkpoint in another session folder and persist the rebuilt checkpoint into its own session folder.
+
+Use `review` when:
+
+- The user asks to review, audit, assess, inspect, or critique a specified session folder's checkpoint and work.
+- The user asks whether a session completed its goal.
+- The user asks whether a session's work has defects, edge cases, missing validation, conflicts, or inconsistencies.
+- The user asks for an objective checkpoint review without restoring or continuing implementation.
 
 ## Session Folder Resolution
 
@@ -93,7 +103,44 @@ When resolving the target session folder:
 3. Create a new target folder only when the user chooses to create one or no existing target session folder can be identified from the current conversation.
 4. Do not use the source session folder as the target session folder unless the user explicitly chooses to write handoff results back to the source folder.
 
-Use lowercase kebab-case for the summary segment. Prefer concise task names.
+For `review`, resolve the source session folder:
+
+1. Require the user to specify a source session folder.
+2. Do not default to the current session folder.
+3. Do not create a source session folder.
+4. Do not inspect `.agent-sessions/` to guess a semantically matching source folder unless the user explicitly asks for discovery or listing.
+
+Use lowercase kebab-case for the summary segment. Prefer concise session names.
+
+## Access Modes
+
+`update`:
+
+- May read related project files and existing checkpoint files in the current session folder.
+- May create the current session folder when needed.
+- May write only `CONTEXT.md` and `HISTORY.md` in the current session folder.
+- Must not create or modify other artifacts unless the user explicitly asks for additional files.
+
+`restore`:
+
+- Read-only.
+- May read checkpoint files in the restore source session folder and related project files.
+- Must not copy checkpoint files, write the current session folder, modify project files, or execute TODO items unless the user explicitly asks for follow-up work.
+
+`handoff`:
+
+- Source session folder is read-only.
+- Target session folder is readable and writable.
+- May copy only non-checkpoint artifacts located inside the source session folder.
+- Must not copy project files or any file outside the source session folder, even when `Work Artifacts` references them.
+- Must not modify project files or execute TODO items unless the user explicitly asks for follow-up work.
+
+`review`:
+
+- Read-only.
+- May read checkpoint files in the specified source session folder and related project files.
+- Must not modify source checkpoint files, write review artifacts, modify project files, or execute TODO items unless the user explicitly asks for follow-up work.
+- By default, outputs the review result only.
 
 ## Update Workflow
 
@@ -103,9 +150,10 @@ When running `update`:
 2. Read existing `CONTEXT.md` and `HISTORY.md` if present.
 3. Compare checkpoint content with the current conversation state and project files. Prefer current project files when they conflict with checkpoint documents.
 4. Rewrite `CONTEXT.md` as a clean current-state snapshot. Do not mechanically append history.
-5. Append one new entry to `HISTORY.md`. Do not merge new history into old entries.
-6. Preserve useful existing history. Do not delete old entries unless the user explicitly requests cleanup.
-7. Move stale process notes, rejected approaches, superseded assumptions, and decision rationale out of `CONTEXT.md` and into the new `HISTORY.md` entry when still useful.
+5. Maintain `Work Artifacts` in `CONTEXT.md` every time. It may be empty when no work artifacts exist.
+6. Append one new entry to `HISTORY.md`. Do not merge new history into old entries.
+7. Preserve useful existing history. Do not delete old entries unless the user explicitly requests cleanup.
+8. Move stale process notes, rejected approaches, superseded assumptions, and decision rationale out of `CONTEXT.md` and into the new `HISTORY.md` entry when still useful.
 
 `update` must create or update both files:
 
@@ -122,15 +170,16 @@ When running `restore`:
 2. If the user specified a different source session folder and the current conversation already has checkpoint files in its own session folder, stop and report the conflict.
 3. Read `CONTEXT.md` first when available.
 4. Read `HISTORY.md` only when needed to understand decision background, troubleshooting rationale, rejected approaches, or historical uncertainty.
-5. If only `CONTEXT.md` exists, restore from it.
-6. If only `HISTORY.md` exists, reconstruct as much background as possible and state that the current-state snapshot is missing.
-7. If neither file exists, state that no usable checkpoint files were found in the session folder.
-8. Do not treat old history as current state.
-9. Do not treat unverified assumptions as facts.
-10. If `HISTORY.md` conflicts with `CONTEXT.md`, prefer `CONTEXT.md` for current state.
-11. If checkpoint files conflict with current project files, prefer current project files.
-12. When restored state is incomplete, inferred, or affected by conflicts, state where the information came from and how confident the reconstruction is.
-13. During `restore`, do not modify project files, execute TODO items, copy checkpoint files, or continue implementation unless the user explicitly asks for follow-up work.
+5. Read `Work Artifacts` to quickly understand the prior work scope, but do not treat it as a complete source of truth.
+6. If only `CONTEXT.md` exists, restore from it.
+7. If only `HISTORY.md` exists, reconstruct as much background as possible and state that the current-state snapshot is missing.
+8. If neither file exists, state that no usable checkpoint files were found in the session folder.
+9. Do not treat old history as current state.
+10. Do not treat unverified assumptions as facts.
+11. If `HISTORY.md` conflicts with `CONTEXT.md`, prefer `CONTEXT.md` for current state.
+12. If checkpoint files conflict with current project files, prefer current project files.
+13. When restored state is incomplete, inferred, or affected by conflicts, state where the information came from and how confident the reconstruction is.
+14. During `restore`, do not modify project files, execute TODO items, copy checkpoint files, or continue implementation unless the user explicitly asks for follow-up work.
 
 Do not modify checkpoint files during `restore` unless the user explicitly asks to update them too.
 
@@ -145,17 +194,18 @@ When running `handoff`:
 5. Resolve the target session folder.
 6. Read source `CONTEXT.md`.
 7. Read source `HISTORY.md` when available.
-8. Scan other files in the source session folder.
-9. Classify non-checkpoint files as still-relevant artifacts or historical/stale artifacts.
-10. Use the classification to decide which non-checkpoint files to copy or discard without waiting for user confirmation.
-11. Record copied and discarded artifacts in the handoff entry and final output so the user can request follow-up corrections if needed.
-12. Create or update the target session folder.
-13. Write target `CONTEXT.md` as the rebuilt current-state snapshot.
-14. Write target `HISTORY.md` by preserving useful source history and appending a handoff entry.
-15. Copy still-relevant artifacts into the target session folder.
-16. Rewrite references in target `CONTEXT.md`, target `HISTORY.md`, and copied artifacts from source paths to target paths where needed.
-17. Verify copied files and rewritten references.
-18. Report the source folder, target folder, copied files, discarded files, and files updated.
+8. Read `Work Artifacts` to quickly understand the prior work scope, but do not treat it as a complete source of truth.
+9. Scan other files in the source session folder.
+10. Classify non-checkpoint files inside the source session folder as still-relevant artifacts or historical/stale artifacts.
+11. Use the classification to decide which non-checkpoint source-folder artifacts to copy or discard without waiting for user confirmation.
+12. Record copied and discarded artifacts in the handoff entry and final output so the user can request follow-up corrections if needed.
+13. Create or update the target session folder.
+14. Write target `CONTEXT.md` as the rebuilt current-state snapshot.
+15. Write target `HISTORY.md` by preserving useful source history and appending a handoff entry.
+16. Copy still-relevant artifacts from the source session folder into the target session folder.
+17. Rewrite references in target `CONTEXT.md`, target `HISTORY.md`, and copied artifacts from source paths to target paths where needed.
+18. Verify copied files and rewritten references.
+19. Report the source folder, target folder, copied files, discarded files, and files updated.
 
 Source session folder guardrails:
 
@@ -169,10 +219,13 @@ Source session folder guardrails:
 Non-checkpoint artifact handling:
 
 - Do not blindly copy every generated document from the source session folder.
-- Classify non-checkpoint files using source `CONTEXT.md` sections such as `Relevant Files`, `TODO`, `Next Actions`, and `Known Risks`.
-- Treat files that still affect future decisions or implementation as still-relevant artifacts.
+- Classify only non-checkpoint files located inside the source session folder.
+- Do not copy project files or any file outside the source session folder.
+- Treat paths in `Work Artifacts` as navigation hints, not as a copy allowlist.
+- Classify source-folder artifacts using source `CONTEXT.md` sections such as `Relevant Files`, `Work Artifacts`, `TODO`, `Next Actions`, and `Known Risks`.
+- Treat source-folder files that still affect future decisions or implementation as still-relevant artifacts.
 - Treat rejected, deferred, superseded, stale, or purely historical process documents as historical/stale artifacts.
-- Do not stop to ask for confirmation before copying or discarding non-checkpoint files.
+- Do not stop to ask for confirmation before copying or discarding non-checkpoint source-folder artifacts.
 - Record copied and discarded artifacts in the handoff entry and final output so the user can review and request follow-up corrections.
 - `Discarded` means not copied into the target session folder. Never delete source files.
 
@@ -185,15 +238,35 @@ Target checkpoint handling:
 - The handoff entry must record source folder, target folder, copied checkpoint files, copied artifacts, discarded artifacts, reference rewrites, user-requested corrections, missing optional source files, and unresolved uncertainty.
 - `handoff` does not modify project files, execute TODO items, or continue implementation unless the user explicitly asks for follow-up work.
 
+## Review Workflow
+
+When running `review`:
+
+1. Resolve the explicitly specified source session folder.
+2. Verify that the source session folder exists.
+3. Verify that the source session folder contains `CONTEXT.md`.
+4. If source validation fails, stop and report the issue. Do not create checkpoint files, create target folders, write review artifacts, modify project files, or search other folders.
+5. Read source `CONTEXT.md`.
+6. Read source `HISTORY.md` when available.
+7. If `HISTORY.md` is missing, continue review and state that historical context is limited.
+8. Read `Work Artifacts` to quickly understand the prior work scope, but do not treat it as a complete source of truth.
+9. Use `CONTEXT.md` to understand the goal, current state, decisions, constraints, risks, open questions, TODO, next actions, relevant files, and work artifacts.
+10. Review whether the session completed `Current Goal`.
+11. Review the referenced work content for defects, edge cases, missing validation, conflicts, or inconsistencies.
+12. Prefer current project files over checkpoint claims when they conflict.
+13. Do not restore session context as the active working context.
+14. Do not modify checkpoint files, project files, or execute TODO items unless the user explicitly asks for follow-up work.
+15. Output the review result only unless the user explicitly asks to create a review artifact.
+
 ## Language and Formatting
 
-When writing checkpoint Markdown files:
+When writing checkpoint Markdown files or review output:
 
 - Keep the required file names and section headings from the file contracts unless project-level instructions explicitly override them.
 - Treat English headings in this skill as structural contracts, not as the default body language.
 - Choose body text language according to project-level or user-level instructions first.
 - If no project-level or user-level language instruction exists, use the current conversation language for body text.
-- Apply this rule to checkpoint Markdown written by this skill, including `CONTEXT.md`, `HISTORY.md`, and handoff entries.
+- Apply this rule to checkpoint Markdown written by this skill, including `CONTEXT.md`, `HISTORY.md`, handoff entries, and optional review artifacts.
 
 ## File Contracts
 
@@ -210,28 +283,47 @@ When writing checkpoint Markdown files:
 
 ## Active Constraints
 
-## Relevant Files
-
-## TODO
+## Known Risks
 
 ## Open Questions
 
-## Known Risks
+## TODO
 
 ## Next Actions
+
+## Relevant Files
+
+## Work Artifacts
 ```
 
 Section intent:
 
 - `Current Goal`: The current objective.
-- `Current State`: The current implementation or task state.
+- `Current State`: The current implementation or session state.
 - `Confirmed Decisions`: Decisions that remain valid.
 - `Active Constraints`: Constraints future work must still obey.
-- `Relevant Files`: Files, folders, or resources directly related to the task.
-- `TODO`: Valid remaining task pool.
-- `Open Questions`: Questions needing discussion, research, or validation.
 - `Known Risks`: Known risks, pitfalls, or caveats.
+- `Open Questions`: Questions needing discussion, research, or validation.
+- `TODO`: Valid remaining work item pool.
 - `Next Actions`: The top 1-3 concrete actions to take next, distilled from `TODO`.
+- `Relevant Files`: Files, folders, or resources directly related to understanding the session.
+- `Work Artifacts`: Main files created, modified, deleted, or moved by the session. This is a navigation index, not a complete diff, not a complete source of truth, and not a handoff copy allowlist.
+
+Use this `Work Artifacts` item structure:
+
+```md
+- [Modified] `path/to/file.md`
+  - Briefly explain what changed in this file.
+```
+
+Allowed `Work Artifacts` actions:
+
+- `[Created]`: The session created the file.
+- `[Modified]`: The session modified an existing file.
+- `[Deleted]`: The session deleted the file.
+- `[Moved]`: The session moved or renamed the file.
+
+`Work Artifacts` must be maintained during every `update`, but it may be empty when no work artifacts exist.
 
 During `handoff`, target `CONTEXT.md` must include one concise provenance note under `Current State` naming the source session folder. Do not place copied/discarded file lists, user-requested corrections, or detailed reference rewrite records in `CONTEXT.md`.
 
@@ -293,17 +385,18 @@ The handoff entry must record copied checkpoint files, copied artifacts, discard
 
 For `update`, keep the user-facing response brief. Mention the session folder and the files updated.
 
-For `restore`, summarize the rebuilt task state instead of repeating all of `HISTORY.md`. Include:
+For `restore`, summarize the rebuilt session state instead of repeating all of `HISTORY.md`. Include:
 
 - Current goal
 - Current state
 - Confirmed decisions
 - Active constraints
-- Relevant files
-- TODO
-- Open questions
 - Known risks
+- Open questions
+- TODO
 - Next actions
+- Relevant files
+- Work artifacts
 - Source and confidence notes for reconstructed state
 
 For `handoff`, first include a brief handoff result summary:
@@ -316,17 +409,40 @@ For `handoff`, first include a brief handoff result summary:
 - Reference rewrites
 - Unresolved risks or open questions
 
-Then summarize the rebuilt task state instead of repeating all of `HISTORY.md`. Include:
+Then summarize the rebuilt session state instead of repeating all of `HISTORY.md`. Include:
 
 - Current goal
 - Current state
 - Confirmed decisions
 - Active constraints
-- Relevant files
-- TODO
-- Open questions
 - Known risks
+- Open questions
+- TODO
 - Next actions
+- Relevant files
+- Work artifacts
 - Source and confidence notes for reconstructed state
 
-Respect project-level language and formatting instructions for generated markdown when they do not conflict with the file contracts above.
+For `review`, output these sections:
+
+```md
+## Goal Completion
+
+## Findings
+
+## Checkpoint Quality
+
+## Open Questions
+
+## Summary
+```
+
+Review section intent:
+
+- `Goal Completion`: State whether `Current Goal` is `Completed`, `Partially Completed`, `Not Completed`, or `Unclear`, and briefly explain the evidence.
+- `Findings`: List concrete issues ordered by severity, including defects, edge cases, behavior risks, documentation conflicts, missing validation, unverified assumptions, or inconsistencies. If there are no findings, say so explicitly.
+- `Checkpoint Quality`: Assess whether `CONTEXT.md` and optional `HISTORY.md` are reliable enough for future restore, handoff, or review. Include whether `Work Artifacts` points to the relevant work scope.
+- `Open Questions`: List questions that cannot be answered from checkpoint files and current project files.
+- `Summary`: Provide a concise actionable conclusion.
+
+Respect project-level language and formatting instructions for generated markdown and review output when they do not conflict with the file contracts above.

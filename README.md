@@ -19,7 +19,7 @@ Each skill lives under `skills/<skill-name>/` as a self-contained folder. The re
 
 | Skill | Description | Path | Documentation |
 | --- | --- | --- | --- |
-| `context-checkpoint` | Manage `CONTEXT.md` and `HISTORY.md` session checkpoints for update, restore, and handoff workflows. | `skills/context-checkpoint` | [English](skills/context-checkpoint/README.md), [中文](skills/context-checkpoint/README.zh-CN.md) |
+| `context-checkpoint` | Manage `CONTEXT.md` and `HISTORY.md` session checkpoints for update, restore, handoff, and review workflows. | `skills/context-checkpoint` | [English](skills/context-checkpoint/README.md), [中文](skills/context-checkpoint/README.zh-CN.md) |
 
 ## Add Skills
 
