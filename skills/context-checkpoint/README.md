@@ -31,7 +31,7 @@ The skill provides four core capabilities:
 - `update`: Create or refresh the current session's checkpoint.
 - `restore`: Rebuild session context from the current session's checkpoint or checkpoint files in a specified session folder.
 - `handoff`: Rebuild session context from another session's checkpoint, then save the rebuilt checkpoint into the current session folder.
-- `review`: Objectively review the actual work referenced by checkpoint files in a specified session folder without restoring or continuing implementation.
+- `review`: Objectively review the actual work referenced by checkpoint files in a specified session folder, then write the result to `REVIEW.md` in that folder, without restoring or continuing implementation.
 
 ## Usage Examples
 
@@ -94,9 +94,9 @@ The skill avoids guessing when a session folder is unclear. It asks the user to 
 ## Access Modes
 
 - `update`: May read related files, and may write only `CONTEXT.md` and `HISTORY.md` in the current session folder.
-- `restore`: Read-only. It does not copy checkpoint files, write session folders, modify project files, or execute TODO items by default.
+- `restore`: Read-only. It does not copy checkpoint files, write session folders, modify project files, or execute TODO items by default. When the source session folder has `REVIEW.md`, it surfaces those findings as open issues to re-verify.
 - `handoff`: Source session folder is read-only. Target session folder is readable and writable. It may copy only non-checkpoint artifacts located inside the source session folder.
-- `review`: Read-only. It outputs review results by default and does not modify checkpoint files, project files, or execute TODO items.
+- `review`: Reads checkpoint and project files, and may write only `REVIEW.md` in the source session folder. It does not modify source checkpoint files, project files, or execute TODO items.
 
 ## Update
 
@@ -127,6 +127,7 @@ During restore:
 - `CONTEXT.md` is read first when available.
 - `HISTORY.md` is read only when historical background is needed.
 - `Work Artifacts` is read to quickly understand the prior work scope, but it is not treated as a complete source of truth.
+- When the source session folder has `REVIEW.md`, its findings are surfaced as open issues to re-verify against current project files, noted as reflecting the work state at review time.
 - If only `CONTEXT.md` exists, the skill restores from it.
 - If only `HISTORY.md` exists, the skill reconstructs what it can and reports that the current-state snapshot is missing.
 - If neither file exists, the skill reports that no usable checkpoint files were found.
@@ -154,7 +155,7 @@ During handoff:
 
 ## Review
 
-`review` objectively reviews the actual work referenced by checkpoint files in a specified session folder without restoring or continuing implementation.
+`review` objectively reviews the actual work referenced by checkpoint files in a specified session folder, then writes the result to `REVIEW.md` in that folder, without restoring or continuing implementation.
 
 During review:
 
@@ -169,9 +170,10 @@ During review:
 - Each finding should include severity, evidence, impact, and a recommended fix.
 - Checkpoint-only quality issues belong under `Checkpoint Quality`, not `Findings`, unless they directly prevent assessing the actual work.
 - Current project files take priority over checkpoint claims when they conflict.
-- Review is read-only and outputs review results by default.
+- The review result is written to `REVIEW.md` in the source session folder, overwriting any previous `REVIEW.md`, and is also returned in the response.
+- Apart from writing `REVIEW.md`, review does not modify source checkpoint files, project files, or execute TODO items.
 
-Review output uses these sections:
+Review output and `REVIEW.md` use these sections:
 
 ```md
 ## Goal Completion
@@ -184,3 +186,5 @@ Review output uses these sections:
 
 ## Summary
 ```
+
+The `REVIEW.md` file additionally records `Reviewed Session` and `Review Date` headers before these sections.
