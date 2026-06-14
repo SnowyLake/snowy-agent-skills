@@ -9,16 +9,16 @@
   - [Review File](#review-file)
 - [Capabilities](#capabilities)
 - [Usage Examples](#usage-examples)
+- [Update](#update)
+- [Restore](#restore)
+- [Handoff](#handoff)
+- [Review](#review)
 - [Reference Workflows](#reference-workflows)
   - [Single Session](#single-session)
   - [Shared Session Collaboration](#shared-session-collaboration)
   - [Review Feedback Loop](#review-feedback-loop)
   - [Handoff or Branching](#handoff-or-branching)
   - [Restore Conflict Guard](#restore-conflict-guard)
-- [Update](#update)
-- [Restore](#restore)
-- [Handoff](#handoff)
-- [Review](#review)
 
 Language: English | [中文](README.zh-CN.md)
 
@@ -90,30 +90,6 @@ $context-checkpoint review .agent-sessions/20260605-example-session.
 
 Fully implicit natural-language requests are supported when the requested capability is clear, but explicitly calling `$context-checkpoint` is recommended.
 
-## Reference Workflows
-
-### Single Session
-
-One session works, runs `update`, later runs `restore`, then continues and updates again.
-
-### Shared Session Collaboration
-
-Multiple agents or conversations use the same session folder as one shared context line. Each collaborator runs `restore` on that folder, continues the work, then runs `update` to write the new state back.
-
-### Review Feedback Loop
-
-A reviewer runs `review` against a source session folder. The result is written to that folder's `REVIEW.md`. A later `restore` of the same folder surfaces those findings as open issues to re-verify before follow-up work.
-
-### Handoff or Branching
-
-One session folder is used as the read-only source, while the current session folder becomes the writable target. Use this when context should migrate or branch into a different session folder.
-
-### Restore Conflict Guard
-
-If the current conversation already has checkpoint files and the user tries to `restore` a different session folder, `restore` stops instead of mixing two context lines. Use `handoff` for migration or use the same shared session folder for collaboration.
-
-Future changes to this skill should preserve these workflow boundaries unless the workflow model is intentionally revised.
-
 ## Update
 
 `update` creates or refreshes the current session checkpoint.
@@ -184,19 +160,136 @@ Behavior:
 
 Permissions:
 
-- Requires an explicit source session folder.
-- May read checkpoint files, source-folder artifacts, and related project files.
-- May write only `REVIEW.md` in the source session folder.
-- Must not modify source checkpoint files, project files, other source artifacts, or execute TODO items.
+- Requires an explicit reviewed session folder.
+- May read checkpoint files, reviewed-session-folder artifacts, and related project files.
+- May write only `REVIEW.md` in the reviewed session folder.
+- Must not modify reviewed checkpoint files, project files, other artifacts, or execute TODO items.
 
 Behavior:
 
-- Requires source `CONTEXT.md`.
-- Treats source `HISTORY.md` as optional historical background.
+- Requires `CONTEXT.md` in the reviewed session folder.
+- Treats `HISTORY.md` in the reviewed session folder as optional historical background.
 - Uses `CONTEXT.md`, `HISTORY.md`, and `Work Artifacts` as the review brief and navigation index.
 - Reviews the actual referenced work, such as modified project files, generated artifacts, tests, configuration, or documentation.
 - First checks whether the session completed `Current Goal`.
 - Then checks for defects, logic gaps, edge cases, missing validation, conflicts, or inconsistencies.
 - Includes severity, evidence, impact, and recommended fix for each finding.
 - Places checkpoint-only quality issues under `Checkpoint Quality`, not `Findings`, unless they directly prevent assessing the actual work.
-- Writes `REVIEW.md` in the source session folder, overwriting any previous `REVIEW.md`, and also returns the review in the response.
+- Writes `REVIEW.md` in the reviewed session folder, overwriting any previous `REVIEW.md`, and also returns the review in the response.
+
+## Reference Workflows
+
+### Single Session
+
+One session runs `update` before context compaction, writing still-valid information into the checkpoint. After `/compact`, it runs `restore` to rebuild session context from the checkpoint and avoid losing useful information.
+
+```text
+[Session A work]
+      |
+      v
+[update writes checkpoint]
+      |
+      v
+[/compact compresses context]
+      |
+      v
+[restore rebuilds session context]
+      |
+      v
+[continue work]
+      |
+      v
+[update refreshes checkpoint]
+```
+
+### Shared Session Collaboration
+
+Multiple agents or conversations use the same session folder as one shared context line. Each collaborator runs `restore` on that folder, continues the work, then runs `update` to write the new state back.
+
+```text
+[Agent A work]
+        |
+        v
+[Agent A update]
+        |
+        v
+[Shared session folder]
+        |
+        v
+[Agent B restore]
+        |
+        v
+[Agent B work]
+        |
+        v
+[Agent B update]
+        |
+        v
+[Shared session folder]
+        |
+        v
+[Agent A restore]
+```
+
+### Review Feedback Loop
+
+A reviewer can run `review` against the reviewed session folder from another agent or conversation, writing the result to that folder's `REVIEW.md`. A later `restore` of the same folder by the original session or another collaborator surfaces those findings as open issues to re-verify.
+
+```text
+[Agent A (Executor) update]
+          |
+          v
+[Reviewed session folder]
+          |
+          v
+[Agent B (Reviewer) review actual work]
+          |
+          v
+[write REVIEW.md]
+          |
+          v
+[Agent A (Executor) restore]
+          |
+          v
+[surface findings and re-verify]
+```
+
+### Handoff or Branching
+
+One session folder is used as the read-only source session folder, while the current session folder becomes the writable target session folder. Use this when context should migrate or branch into a different session folder.
+
+```text
+[Source session folder]
+  CONTEXT.md
+  HISTORY.md
+  artifacts
+      |
+      v
+[handoff rebuilds context]
+      |
+      v
+[Target session folder]
+  CONTEXT.md
+  HISTORY.md
+  copied artifacts
+```
+
+### Restore Conflict Guard
+
+If the current conversation already has checkpoint files and the user tries to `restore` a different session folder, `restore` stops instead of mixing two context lines. Use `handoff` for migration or use the same shared session folder for collaboration.
+
+```text
+[Current session already has checkpoint]
+      |
+      v
+[restore another session folder]
+      |
+      v
+[stop]
+      |
+      +-- migrate or branch: use handoff
+      |
+      +-- collaborate: share the same session folder
+```
+
+Future changes to this skill should preserve these workflow boundaries unless the workflow model is intentionally revised.

@@ -9,16 +9,16 @@
   - [Review 文件](#review-文件)
 - [功能](#功能)
 - [使用示例](#使用示例)
+- [Update](#update)
+- [Restore](#restore)
+- [Handoff](#handoff)
+- [Review](#review)
 - [参考工作流](#参考工作流)
   - [单会话持续工作](#单会话持续工作)
   - [共享会话协作](#共享会话协作)
   - [审阅反馈闭环](#审阅反馈闭环)
   - [Handoff 或分支接管](#handoff-或分支接管)
   - [Restore 冲突保护](#restore-冲突保护)
-- [Update](#update)
-- [Restore](#restore)
-- [Handoff](#handoff)
-- [Review](#review)
 
 语言: [English](README.md) | 中文
 
@@ -89,30 +89,6 @@ $context-checkpoint review .agent-sessions/20260605-example-session.
 ```
 
 完全隐式的自然语言请求不被禁止, 但推荐显式调用 `$context-checkpoint`.
-
-## 参考工作流
-
-### 单会话持续工作
-
-单个会话工作, 运行 `update`, 之后运行 `restore`, 再继续工作并再次 `update`.
-
-### 共享会话协作
-
-多个 agent 或多个会话使用同一个会话文件夹作为共享上下文主线. 每个协作者对该文件夹运行 `restore`, 继续工作, 再运行 `update` 把新状态写回.
-
-### 审阅反馈闭环
-
-审阅者对源会话文件夹运行 `review`. 结果会写入该文件夹的 `REVIEW.md`. 后续对同一文件夹运行 `restore` 时, 会把这些 findings 浮出为需要重新核验的 open issues.
-
-### Handoff 或分支接管
-
-一个会话文件夹作为只读源会话文件夹, 当前会话文件夹作为可写目标会话文件夹. 当上下文需要迁移或派生到不同会话文件夹时使用这个工作流.
-
-### Restore 冲突保护
-
-如果当前会话已经有 checkpoint 文件, 又尝试 `restore` 另一个会话文件夹, `restore` 会停止, 避免混合两条上下文主线. 需要迁移时使用 `handoff`, 需要协作时共享同一个会话文件夹.
-
-后续迭代应保持这些工作流边界, 除非明确要调整工作流模型本身.
 
 ## Update
 
@@ -196,3 +172,120 @@ $context-checkpoint review .agent-sessions/20260605-example-session.
 - 每条 finding 包含严重度, 证据, 影响和推荐修复方案.
 - Checkpoint 自身质量问题放入 `Checkpoint Quality`, 不放入 `Findings`, 除非它直接导致无法评估实际工作.
 - 将 `REVIEW.md` 写入被审阅会话文件夹, 覆盖此前的 `REVIEW.md`, 并同时在回复中输出 review.
+
+## 参考工作流
+
+### 单会话持续工作
+
+单个会话在上下文压缩前运行 `update`, 将当前仍然有效的信息写入 checkpoint. 上下文压缩后运行 `restore`, 从 checkpoint 重建会话上下文, 避免有用信息因 `/compact` 丢失.
+
+```text
+[会话 A 工作]
+      |
+      v
+[update 写入 checkpoint]
+      |
+      v
+[/compact 压缩上下文]
+      |
+      v
+[restore 重建会话上下文]
+      |
+      v
+[继续工作]
+      |
+      v
+[update 刷新 checkpoint]
+```
+
+### 共享会话协作
+
+多个 agent 或多个会话使用同一个会话文件夹作为共享上下文主线. 每个协作者对该文件夹运行 `restore`, 继续工作, 再运行 `update` 把新状态写回.
+
+```text
+[Agent A 工作]
+        |
+        v
+[Agent A update]
+        |
+        v
+[共享会话文件夹]
+        |
+        v
+[Agent B restore]
+        |
+        v
+[Agent B 工作]
+        |
+        v
+[Agent B update]
+        |
+        v
+[共享会话文件夹]
+        |
+        v
+[Agent A restore]
+```
+
+### 审阅反馈闭环
+
+审阅者可以在另一个 agent 或会话中对被审阅会话文件夹运行 `review`, 将结果写入该文件夹的 `REVIEW.md`. 后续原会话或其他协作者对同一文件夹运行 `restore` 时, 会把这些 findings 浮出为需要重新核验的 open issues.
+
+```text
+[Agent A (Executor) update]
+          |
+          v
+[被审阅会话文件夹]
+          |
+          v
+[Agent B (Reviewer) review 实际工作内容]
+          |
+          v
+[写入 REVIEW.md]
+          |
+          v
+[Agent A (Executor) restore]
+          |
+          v
+[浮出 findings 并重新核验]
+```
+
+### Handoff 或分支接管
+
+一个会话文件夹作为只读源会话文件夹, 当前会话文件夹作为可写目标会话文件夹. 当上下文需要迁移或派生到不同会话文件夹时使用这个工作流.
+
+```text
+[源会话文件夹]
+  CONTEXT.md
+  HISTORY.md
+  artifacts
+      |
+      v
+[handoff 重建上下文]
+      |
+      v
+[目标会话文件夹]
+  CONTEXT.md
+  HISTORY.md
+  copied artifacts
+```
+
+### Restore 冲突保护
+
+如果当前会话已经有 checkpoint 文件, 又尝试 `restore` 另一个会话文件夹, `restore` 会停止, 避免混合两条上下文主线. 需要迁移时使用 `handoff`, 需要协作时共享同一个会话文件夹.
+
+```text
+[当前会话已有 checkpoint]
+      |
+      v
+[restore 另一个会话文件夹]
+      |
+      v
+[停止]
+      |
+      +-- 迁移或分支: 使用 handoff
+      |
+      +-- 协作接力: 共享同一会话文件夹
+```
+
+后续迭代应保持这些工作流边界, 除非明确要调整工作流模型本身.
