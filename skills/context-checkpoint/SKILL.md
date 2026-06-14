@@ -1,6 +1,6 @@
 ---
 name: context-checkpoint
-description: Manage CONTEXT.md and HISTORY.md session checkpoints. Use for update, restore, handoff, or checkpoint-guided work review requests that refresh, rebuild, transfer, or audit session context.
+description: Manage session context for long-running, multi-session, handoff-based, or review-driven agent work.
 ---
 
 # Context Checkpoint
@@ -20,7 +20,7 @@ Provide exactly four capabilities:
 - `update`: Create or refresh the current session checkpoint in `CONTEXT.md` and `HISTORY.md`.
 - `restore`: Rebuild the current session context from the current session checkpoint files or checkpoint files in an explicitly specified session folder.
 - `handoff`: Rebuild the current conversation state from another session folder's checkpoint files, then save the rebuilt state into the current conversation's session folder.
-- `review`: Objectively review the actual work referenced by checkpoint files in an explicitly specified session folder, then write the result to `REVIEW.md` in that session folder, without restoring or continuing implementation.
+- `review`: Objectively review the actual work referenced by checkpoint files in the current session folder or an explicitly specified session folder, then write the result to `REVIEW.md` in that folder, without restoring or continuing implementation.
 
 Keep this skill narrow. Do not manage project wikis, create unrelated documents, or add broader session-management commands.
 
@@ -49,6 +49,7 @@ Use `handoff` when:
 
 Use `review` when:
 
+- The user asks to review, audit, assess, inspect, or critique the current session folder's actual work.
 - The user asks to review, audit, assess, inspect, or critique a specified session folder's actual work.
 - The user asks whether a session completed its goal.
 - The user asks whether a session's work has defects, edge cases, missing validation, conflicts, or inconsistencies.

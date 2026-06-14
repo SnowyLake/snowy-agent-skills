@@ -24,7 +24,7 @@
 
 ## 概览
 
-`context-checkpoint` 是一个 agent 无关的上下文管理 skill, 用于在长任务或多会话工作中保存, 重建, 传递和审阅会话上下文.
+`context-checkpoint` 是一个 agent 无关的上下文管理 skill, 用于 long-running, multi-session, handoff-based 或 review-driven agent work.
 
 这个 skill 围绕会话文件夹和 Markdown checkpoint 文件组织. 会话文件夹是上下文身份, agent 或会话只是按所运行命令读取或写入该上下文的协作者.
 
@@ -64,7 +64,7 @@ Checkpoint 文件用于重建会话上下文:
 - `update`: 创建或刷新当前会话 checkpoint.
 - `restore`: 从当前会话 checkpoint 或指定会话文件夹中的 checkpoint 文件重建会话上下文.
 - `handoff`: 从另一个会话 checkpoint 重建会话上下文, 并将重建后的 checkpoint 保存到当前会话文件夹.
-- `review`: 审阅指定会话文件夹中 checkpoint 所指向的实际工作内容, 并将结果写入该文件夹的 `REVIEW.md`.
+- `review`: 审阅当前会话文件夹或指定会话文件夹中 checkpoint 所指向的实际工作内容, 并将结果写入该文件夹的 `REVIEW.md`.
 
 ## 使用示例
 
@@ -75,6 +75,7 @@ $context-checkpoint update
 $context-checkpoint restore
 $context-checkpoint restore .agent-sessions/20260605-example-session
 $context-checkpoint handoff .agent-sessions/20260605-example-session
+$context-checkpoint review
 $context-checkpoint review .agent-sessions/20260605-example-session
 ```
 
@@ -84,8 +85,9 @@ $context-checkpoint review .agent-sessions/20260605-example-session
 $context-checkpoint 更新上下文.
 $context-checkpoint 从当前会话 checkpoint 恢复上下文.
 $context-checkpoint 从 .agent-sessions/20260605-example-session 恢复上下文.
-$context-checkpoint 从 .agent-sessions/20260605-example-session handoff 上下文到当前会话.
-$context-checkpoint review .agent-sessions/20260605-example-session.
+$context-checkpoint 从 .agent-sessions/20260605-example-session 接管上下文到当前会话.
+$context-checkpoint 审阅当前会话文件夹.
+$context-checkpoint 审阅 .agent-sessions/20260605-example-session.
 ```
 
 完全隐式的自然语言请求不被禁止, 但推荐显式调用 `$context-checkpoint`.
@@ -152,11 +154,12 @@ $context-checkpoint review .agent-sessions/20260605-example-session.
 
 ## Review
 
-`review` 用于客观审阅指定会话文件夹中 checkpoint 所指向的实际工作内容, 再将结果写入该文件夹的 `REVIEW.md`, 不恢复上下文, 不继续实现.
+`review` 用于客观审阅当前会话文件夹或指定会话文件夹中 checkpoint 所指向的实际工作内容, 再将结果写入该文件夹的 `REVIEW.md`, 不恢复上下文, 不继续实现.
 
 权限:
 
-- 必须显式指定被审阅会话文件夹.
+- 未提供路径时使用当前会话文件夹.
+- 提供路径时使用指定的被审阅会话文件夹.
 - 可以读取 checkpoint 文件, 被审阅会话文件夹 artifacts 和相关项目文件.
 - 只可以写被审阅会话文件夹中的 `REVIEW.md`.
 - 不得修改被审阅会话文件夹的 checkpoint 文件, 项目文件, 其他 artifacts 或执行 TODO.
@@ -229,25 +232,43 @@ $context-checkpoint review .agent-sessions/20260605-example-session.
 
 ### 审阅反馈闭环
 
-审阅者可以在另一个 agent 或会话中对被审阅会话文件夹运行 `review`, 将结果写入该文件夹的 `REVIEW.md`. 后续原会话或其他协作者对同一文件夹运行 `restore` 时, 会把这些 findings 浮出为需要重新核验的 open issues.
+审阅者可以对共享会话文件夹运行 `review`, 将结果写入该文件夹的 `REVIEW.md`. 实现者随后对同一文件夹运行 `restore`, 消费 review findings, 修复或继续工作, 再运行 `update`. 重复这个闭环直到 review 通过. 审阅者最后可以运行一次 `restore`, 重建完成后的共享上下文并收束工作.
 
 ```text
-[Agent A (Executor) update]
+[Agent A plan]
           |
           v
-[被审阅会话文件夹]
+[Agent A update]
           |
           v
-[Agent B (Reviewer) review 实际工作内容]
+[共享会话文件夹]
+          |
+          v
+[Agent B restore]
+          |
+          v
+[Agent B implement]
+          |
+          v
+[Agent B update]
+          |
+          v
+[Agent A review 实际工作内容]
           |
           v
 [写入 REVIEW.md]
           |
           v
-[Agent A (Executor) restore]
+[Agent B restore review findings]
           |
           v
-[浮出 findings 并重新核验]
+[Agent B fix and update]
+          |
+          v
+[重复直到 review 通过]
+          |
+          v
+[Agent A final restore]
 ```
 
 ### Handoff 或分支接管

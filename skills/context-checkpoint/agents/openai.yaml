@@ -1,4 +1,4 @@
 interface:
   display_name: "Context Checkpoint"
-  short_description: "Update, restore, hand off, or review checkpoint-guided work"
-  default_prompt: "Use $context-checkpoint to update, restore, hand off, or review actual work guided by CONTEXT.md and HISTORY.md session checkpoints."
+  short_description: "Session context management for long-running, multi-session, handoff-based, or review-driven agent work"
+  default_prompt: "Use $context-checkpoint to manage session context for long-running, multi-session, handoff-based, or review-driven agent work."

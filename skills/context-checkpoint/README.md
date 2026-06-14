@@ -24,11 +24,11 @@ Language: English | [中文](README.zh-CN.md)
 
 ## Overview
 
-`context-checkpoint` is an agent-neutral context management skill for preserving, rebuilding, transferring, and reviewing session context across long-running or multi-session work.
+`context-checkpoint` is an agent-neutral context management skill for long-running, multi-session, handoff-based, or review-driven agent work.
 
 The skill is organized around session folders and Markdown checkpoint files. A session folder is the context identity, while agents or conversations are interchangeable collaborators that read from or write to that context according to the command they run.
 
-`SKILL.md` is a lightweight routing layer. Command details live in `references/update.md`, `references/restore.md`, `references/handoff.md`, and `references/review.md`. Shared file structures live in `references/file-contracts.md`.
+`SKILL.md` is a lightweight routing layer. Command details live under `references/`.
 
 ## Terminology
 
@@ -64,7 +64,7 @@ The skill provides four core capabilities:
 - `update`: Create or refresh the current session checkpoint.
 - `restore`: Rebuild session context from the current session checkpoint or checkpoint files in a specified session folder.
 - `handoff`: Rebuild session context from another session checkpoint, then save the rebuilt checkpoint into the current session folder.
-- `review`: Review the actual work referenced by checkpoint files in a specified session folder, then write the result to `REVIEW.md` in that folder.
+- `review`: Review the actual work referenced by checkpoint files in the current session folder or a specified session folder, then write the result to `REVIEW.md` in that folder.
 
 ## Usage Examples
 
@@ -75,6 +75,7 @@ $context-checkpoint update
 $context-checkpoint restore
 $context-checkpoint restore .agent-sessions/20260605-example-session
 $context-checkpoint handoff .agent-sessions/20260605-example-session
+$context-checkpoint review
 $context-checkpoint review .agent-sessions/20260605-example-session
 ```
 
@@ -84,7 +85,8 @@ Explicit natural-language requests:
 $context-checkpoint update context for this session.
 $context-checkpoint restore context from the current session checkpoint.
 $context-checkpoint restore context from .agent-sessions/20260605-example-session.
-$context-checkpoint hand off context from .agent-sessions/20260605-example-session into this session.
+$context-checkpoint take over context from .agent-sessions/20260605-example-session into the current session.
+$context-checkpoint review the current session folder.
 $context-checkpoint review .agent-sessions/20260605-example-session.
 ```
 
@@ -105,10 +107,8 @@ Behavior:
 - Resolves the current session folder.
 - Reads existing `CONTEXT.md` and `HISTORY.md` when present.
 - Prioritizes current project files over conflicting checkpoint content.
-- Rewrites `CONTEXT.md` as a clean current-state snapshot.
-- Maintains `Work Artifacts` every time, even when empty.
+- Rewrites `CONTEXT.md` as a clean current-state snapshot, moving stale, rejected, or no longer useful content out of `CONTEXT.md`.
 - Appends one new `HISTORY.md` entry instead of merging new history into old entries.
-- Preserves useful historical records and moves stale process notes out of `CONTEXT.md` when they remain useful.
 
 ## Restore
 
@@ -127,7 +127,6 @@ Behavior:
 - Stops if the current session already has checkpoint files and the user specifies a different session folder.
 - Reads `CONTEXT.md` first when available.
 - Reads `HISTORY.md` only when historical background is needed.
-- Uses `Work Artifacts` as a navigation index, not as a complete source of truth.
 - Surfaces `REVIEW.md` findings as open issues to re-verify when that file exists.
 - Reports missing or partial checkpoint files instead of guessing.
 - Prioritizes current project files over conflicting checkpoint content.
@@ -149,18 +148,18 @@ Behavior:
 - Stops when source validation fails.
 - Does not create missing source checkpoint files.
 - Does not search other folders unless the user explicitly asks for discovery.
-- Uses `Work Artifacts` as a navigation index, not as a complete source of truth or copy allowlist.
 - Classifies source-folder non-checkpoint artifacts before copying.
 - Writes a concise provenance note in target `CONTEXT.md`.
-- Appends a handoff audit entry to target `HISTORY.md` covering copied files, discarded files, reference rewrites, user-requested corrections, and unresolved uncertainty.
+- Appends a handoff audit entry to target `HISTORY.md`.
 
 ## Review
 
-`review` objectively reviews the actual work referenced by checkpoint files in a specified session folder, then writes the result to `REVIEW.md` in that folder, without restoring or continuing implementation.
+`review` objectively reviews the actual work referenced by checkpoint files in the current session folder or a specified session folder, then writes the result to `REVIEW.md` in that folder, without restoring or continuing implementation.
 
 Permissions:
 
-- Requires an explicit reviewed session folder.
+- Uses the current session folder when no path is provided.
+- Uses the specified reviewed session folder when a path is provided.
 - May read checkpoint files, reviewed-session-folder artifacts, and related project files.
 - May write only `REVIEW.md` in the reviewed session folder.
 - Must not modify reviewed checkpoint files, project files, other artifacts, or execute TODO items.
@@ -233,25 +232,43 @@ Multiple agents or conversations use the same session folder as one shared conte
 
 ### Review Feedback Loop
 
-A reviewer can run `review` against the reviewed session folder from another agent or conversation, writing the result to that folder's `REVIEW.md`. A later `restore` of the same folder by the original session or another collaborator surfaces those findings as open issues to re-verify.
+A reviewer can run `review` against the shared session folder, writing the result to that folder's `REVIEW.md`. The implementer then runs `restore` on the same folder, consumes the review findings, fixes or continues the work, and runs `update` again. Repeat this loop until review passes. The reviewer may run a final `restore` to rebuild the completed shared context and close the loop.
 
 ```text
-[Agent A (Executor) update]
+[Agent A plan]
           |
           v
-[Reviewed session folder]
+[Agent A update]
           |
           v
-[Agent B (Reviewer) review actual work]
+[Shared session folder]
+          |
+          v
+[Agent B restore]
+          |
+          v
+[Agent B implement]
+          |
+          v
+[Agent B update]
+          |
+          v
+[Agent A review actual work]
           |
           v
 [write REVIEW.md]
           |
           v
-[Agent A (Executor) restore]
+[Agent B restore review findings]
           |
           v
-[surface findings and re-verify]
+[Agent B fix and update]
+          |
+          v
+[repeat until review passes]
+          |
+          v
+[Agent A final restore]
 ```
 
 ### Handoff or Branching

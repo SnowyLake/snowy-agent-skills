@@ -131,7 +131,7 @@ The handoff entry must record copied checkpoint files, copied artifacts, discard
 
 ## REVIEW.md
 
-`REVIEW.md` stores the latest `review` result for a session folder. `review` writes it into the reviewed source session folder, overwriting any previous `REVIEW.md`. Use this structure:
+`REVIEW.md` stores the latest `review` result for a session folder. `review` writes it into the reviewed session folder, overwriting any previous `REVIEW.md`. Use this structure:
 
 ```md
 # REVIEW.md
@@ -153,7 +153,7 @@ The handoff entry must record copied checkpoint files, copied artifacts, discard
 
 `REVIEW.md` section intent:
 
-- `Reviewed Session`: The source session folder this review targets.
+- `Reviewed Session`: The reviewed session folder this review targets.
 - `Review Date`: The review date in `YYYY-MM-DD` format.
 - `Goal Completion`, `Findings`, `Checkpoint Quality`, `Open Questions`, `Summary`: Same intent as the `review` output sections defined in `review.md`.
 

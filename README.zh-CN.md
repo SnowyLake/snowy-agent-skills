@@ -6,6 +6,7 @@
 
 - [概览](#概览)
 - [可用 Skills](#可用-skills)
+  - [context-checkpoint](#context-checkpoint)
 - [新增 Skills](#新增-skills)
 - [仓库结构](#仓库结构)
 
@@ -17,9 +18,11 @@ SnowyAgentSkills 是一个可复用 agent skills 集合仓库.
 
 ## 可用 Skills
 
-| Skill | 简介 | 路径 | 文档 |
-| --- | --- | --- | --- |
-| `context-checkpoint` | 管理 `CONTEXT.md` 和 `HISTORY.md` 会话 checkpoint, 支持 update, restore, handoff 和 review 工作流. | `skills/context-checkpoint` | [English](skills/context-checkpoint/README.md), [中文](skills/context-checkpoint/README.zh-CN.md) |
+### context-checkpoint
+
+- 简介: 管理 long-running, multi-session, handoff-based 或 review-driven agent work 中的会话上下文.
+
+- 文档: [English](skills/context-checkpoint/README.md), [中文](skills/context-checkpoint/README.zh-CN.md)
 
 ## 新增 Skills
 

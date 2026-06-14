@@ -6,6 +6,7 @@ Language: English | [中文](README.zh-CN.md)
 
 - [Overview](#overview)
 - [Available Skills](#available-skills)
+  - [context-checkpoint](#context-checkpoint)
 - [Add Skills](#add-skills)
 - [Repository Layout](#repository-layout)
 
@@ -17,9 +18,11 @@ Each skill lives under `skills/<skill-name>/` as a self-contained folder. The re
 
 ## Available Skills
 
-| Skill | Description | Path | Documentation |
-| --- | --- | --- | --- |
-| `context-checkpoint` | Manage `CONTEXT.md` and `HISTORY.md` session checkpoints for update, restore, handoff, and review workflows. | `skills/context-checkpoint` | [English](skills/context-checkpoint/README.md), [中文](skills/context-checkpoint/README.zh-CN.md) |
+### context-checkpoint
+
+- Description: Manage session context for long-running, multi-session, handoff-based, or review-driven agent work.
+
+- Documentation: [English](skills/context-checkpoint/README.md), [中文](skills/context-checkpoint/README.zh-CN.md)
 
 ## Add Skills
 
