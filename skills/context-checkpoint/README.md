@@ -6,6 +6,7 @@ Language: English | [中文](README.zh-CN.md)
 
 - [Overview](#overview)
 - [Capabilities](#capabilities)
+- [Workflow](#workflow)
 - [Usage Examples](#usage-examples)
 - [Checkpoint Files](#checkpoint-files)
 - [Session Folders](#session-folders)
@@ -24,6 +25,8 @@ A checkpoint is a context snapshot of the current session. Each checkpoint conta
 - `CONTEXT.md` stores only current, still-valid information that affects future work.
 - `HISTORY.md` stores historical summaries, troubleshooting records, rejected or deferred approaches, and reasoning archives.
 
+`SKILL.md` is a lightweight routing layer that holds the command selection rules, global invariants, and language rules. Each command loads its own reference under `references/` on demand, and all checkpoint file structures live in `references/file-contracts.md`. This progressive-disclosure layout keeps the resident skill small while making each command independently executable.
+
 ## Capabilities
 
 The skill provides four core capabilities:
@@ -32,6 +35,20 @@ The skill provides four core capabilities:
 - `restore`: Rebuild session context from the current session's checkpoint or checkpoint files in a specified session folder.
 - `handoff`: Rebuild session context from another session's checkpoint, then save the rebuilt checkpoint into the current session folder.
 - `review`: Objectively review the actual work referenced by checkpoint files in a specified session folder, then write the result to `REVIEW.md` in that folder, without restoring or continuing implementation.
+
+## Workflow
+
+`context-checkpoint` is organized around session folders. A session folder is the context identity, and agents are interchangeable collaborators that read from or write to that context according to the command they run.
+
+Common workflows:
+
+- Single session workflow: one session works, runs `update`, later runs `restore`, then continues and updates again.
+- Shared session collaboration workflow: multiple agents or conversations use the same session folder as one shared context line. Each collaborator runs `restore` on that folder, continues the work, then runs `update` to write the new state back.
+- Review feedback workflow: a reviewer runs `review` against a source session folder. The result is written to that folder's `REVIEW.md`. A later `restore` of the same folder surfaces those findings as open issues to re-verify before follow-up work.
+- Handoff or branching workflow: one session folder is used as the read-only source, while the current session folder becomes the writable target. Use this when context should migrate or branch into a different session folder.
+- Explicit restore conflict guard: if the current conversation already has checkpoint files and the user tries to `restore` a different session folder, `restore` stops instead of mixing two context lines. Use `handoff` for migration or use the same shared session folder for collaboration.
+
+Future changes to this skill should preserve these workflow boundaries unless the workflow model is intentionally revised.
 
 ## Usage Examples
 

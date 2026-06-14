@@ -1,2 +1,6 @@
-*.code-workspace
+# Self
 .agent-sessions/
+
+# VS Code
+.vscode/
+*.code-workspace

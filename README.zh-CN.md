@@ -55,6 +55,7 @@ SnowyAgentSkills/
 |       |-- SKILL.md
 |       |-- README.md
 |       |-- README.zh-CN.md
+|       |-- references/
 |       `-- agents/
 |           `-- openai.yaml
 |-- README.md
